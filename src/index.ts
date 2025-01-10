@@ -1,11 +1,13 @@
-import express from 'express';
-import { sequelize } from './models/user.js';
-import User from './models/user.js';
+import express, { Request, Response } from 'express';
+import { sequelize } from './models/user'; // Remove .js extension
+import User from './models/user'; // Remove .js extension
 const app = express();
 const port = 3000;
 
+// Middleware to parse JSON request bodies
 app.use(express.json());
 
+// Sync database
 sequelize.sync({ alter: true })
   .then(() => {
     console.log('Database synced successfully');
@@ -15,10 +17,8 @@ sequelize.sync({ alter: true })
   });
 
 // Routes
-// GET: Fetch a user by ID
-app.get('/user/:id', async (req, res) => {
+app.get('/user/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-
   try {
     const user = await User.findByPk(id);
     if (user) {
@@ -32,21 +32,22 @@ app.get('/user/:id', async (req, res) => {
   }
 });
 
-// POST: Create a new user
-app.post('/user', async (req, res) => {
+app.post('/user', async (req: Request, res: Response) => {
   try {
-    const user = await User.create(req.body); 
-    res.status(201).json(user);
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
+    }
+    const user = await User.create({ name, email, password });
+    return res.status(201).json(user);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
-// PUT: Update an existing user
-app.put('/user/:id', async (req, res) => {
+app.put('/user/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-
   try {
     const user = await User.findByPk(id);
     if (user) {
@@ -61,14 +62,12 @@ app.put('/user/:id', async (req, res) => {
   }
 });
 
-// DELETE: Delete a user
-app.delete('/user/:id', async (req, res) => {
+app.delete('/user/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-
   try {
     const user = await User.findByPk(id);
     if (user) {
-      await user.destroy(); 
+      await user.destroy();
       res.json({ message: 'User deleted successfully' });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -79,8 +78,6 @@ app.delete('/user/:id', async (req, res) => {
   }
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-
