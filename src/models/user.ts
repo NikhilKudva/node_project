@@ -13,8 +13,10 @@ interface UserAttributes {
   name: string;
   email: string;
   password: string;
-  created_at?: Date;  // Changed to match DB column name
-  updated_at?: Date;  // Changed to match DB column name
+  role?: 'user' | 'admin';
+  status?: 'active' | 'inactive';
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'created_at' | 'updated_at'> {}
@@ -24,8 +26,10 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public name!: string;
   public email!: string;
   public password!: string;
-  public created_at!: Date;  // Changed to match DB column name
-  public updated_at!: Date;  // Changed to match DB column name
+  public role!: 'user' | 'admin';
+  public status!: 'active' | 'inactive';
+  public created_at!: Date;
+  public updated_at!: Date;
 }
 
 User.init(
@@ -48,12 +52,22 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    created_at: {  // Changed to match DB column name
+    role: {
+      type: DataTypes.ENUM('user', 'admin'),
+      allowNull: false,
+      defaultValue: 'user',
+    },
+    status: {
+      type: DataTypes.ENUM('active', 'inactive'),
+      allowNull: false,
+      defaultValue: 'active',
+    },
+    created_at: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {  // Changed to match DB column name
+    updated_at: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
@@ -63,9 +77,9 @@ User.init(
     sequelize,
     tableName: 'users',
     timestamps: true,
-    underscored: true,  // This tells Sequelize to use snake_case for column names
-    createdAt: 'created_at',  // Specify the custom column name
-    updatedAt: 'updated_at'   // Specify the custom column name
+    underscored: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
   }
 );
 
