@@ -1,5 +1,5 @@
-import { sequelize } from './models/user';
-import User from './models/user';
+import { sequelize } from '../models/user';
+import User from '../models/user';
 
 const createUser = async () => {
   await sequelize.sync({ alter: true });
