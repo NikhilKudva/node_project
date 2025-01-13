@@ -3,7 +3,6 @@ import { sequelize } from './models/user';
 import { Op } from 'sequelize';
 import User from './models/user';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import { authenticateJWT, authorizeAdmin } from './middleware/authMiddleware';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
