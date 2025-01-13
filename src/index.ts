@@ -9,6 +9,7 @@ import cron from 'node-cron';
 import markUsersInactive from './utils/activitychecker';
 import Redis from 'ioredis';
 import expressRedisCache from 'express-redis-cache';
+import login from './routes/login';
 
 dotenv.config();
 
@@ -41,21 +42,7 @@ cron.schedule('0 * * * *', async () => {
 });
 
 // Login route
-app.post('/login', async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  try {
-    const user = await User.findOne({ where: { email } });
-    if (user && password === user.password) {
-      const token = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
-      res.json({ token });
-    }{
-      res.status(401).json({ message: 'Invalid email or password' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+app.post('/login', login);
 
 // CRUD operations (only accessible by admin)
 app.get('/user/:id', authenticateJWT, authorizeAdmin, cache.route(), async (req: Request, res: Response) => {
