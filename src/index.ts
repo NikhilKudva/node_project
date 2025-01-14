@@ -1,8 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { sequelize } from './models/user';
-import { Op } from 'sequelize';
 import User from './models/user';
-import jwt from 'jsonwebtoken';
 import { authenticateJWT, authorizeAdmin } from './middleware/authMiddleware';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
@@ -10,6 +8,7 @@ import markUsersInactive from './utils/activitychecker';
 import Redis from 'ioredis';
 import expressRedisCache from 'express-redis-cache';
 import login from './routes/login';
+import refresh from './routes/refresh';
 
 dotenv.config();
 
@@ -43,6 +42,9 @@ cron.schedule('0 * * * *', async () => {
 
 // Login route
 app.post('/login', login);
+
+//refresh route
+app.post('/refresh', refresh);
 
 // CRUD operations (only accessible by admin)
 app.get('/user/:id', authenticateJWT, authorizeAdmin, cache.route(), async (req: Request, res: Response) => {
