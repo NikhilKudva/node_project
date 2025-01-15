@@ -7,8 +7,9 @@ import cron from 'node-cron';
 import markUsersInactive from './utils/activitychecker';
 import Redis from 'ioredis';
 import expressRedisCache from 'express-redis-cache';
-import login from './routes/login';
-import refresh from './routes/refresh';
+import login from './functions/login';
+import refresh from './functions/refresh';
+import {getUser,createUser,updateUser,deleteUser} from './functions/crud';
 
 dotenv.config();
 
@@ -47,79 +48,14 @@ app.post('/login', login);
 app.post('/refresh', refresh);
 
 // CRUD operations (only accessible by admin)
-app.get('/user/:id', authenticateJWT, authorizeAdmin, cache.route(), async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const user = await User.findByPk(id);
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+app.get('/user/:id', authenticateJWT, authorizeAdmin, cache.route(), getUser);
 
-app.post('/user', authenticateJWT, authorizeAdmin, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      res.status(400).json({ message: 'Name, email, and password are required' });
-      return;
-    }
-    const user = await User.create({ name, email, password });
-    cache.del('/user/*', (error) => {
-      if (error) console.error('Error clearing cache:', error);
-      else console.log('Cache cleared successfully');
-    });
-    res.status(201).json(user);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+app.post('/user', authenticateJWT, authorizeAdmin, createUser); 
 
-app.put('/user/:id', authenticateJWT, authorizeAdmin, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const user = await User.findByPk(id);
-    if (user) {
-      await user.update(req.body);
-      cache.del(`/user/${id}`, (error) => {
-        if (error) console.error('Error clearing cache:', error);
-        else console.log('Cache cleared successfully');
-      });
-      res.json(user);
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
-
-app.delete('/user/:id', authenticateJWT, authorizeAdmin, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const user = await User.findByPk(id);
-    if (user) {
-      await user.destroy();
-      cache.del(`/user/${id}`, (error) => {
-        if (error) console.error('Error clearing cache:', error);
-        else console.log('Cache cleared successfully');
-      });
-      res.json({ message: 'User deleted successfully' });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+app.put('/user/:id', authenticateJWT, authorizeAdmin, updateUser);
+ 
+app.delete('/user/:id', authenticateJWT, authorizeAdmin, deleteUser)
+  
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
