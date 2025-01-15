@@ -7,9 +7,9 @@ import cron from 'node-cron';
 import markUsersInactive from './utils/activitychecker';
 import Redis from 'ioredis';
 import expressRedisCache from 'express-redis-cache';
-import login from './functions/login';
-import refresh from './functions/refresh';
-import {getUser,createUser,updateUser,deleteUser} from './functions/crud';
+import login from './controllers/login';
+import refresh from './controllers/refresh';
+import * as crudcontroller from './controllers/crud.controllers';
 
 dotenv.config();
 
@@ -48,14 +48,27 @@ app.post('/login', login);
 app.post('/refresh', refresh);
 
 // CRUD operations (only accessible by admin)
-app.get('/user/:id',cache.route(), getUser);
+app.get(
+  '/user/:id',
+  cache.route(), 
+  crudcontroller.getUser
+);
 
-app.post('/user',createUser); 
+app.post(
+  '/user',
+  crudcontroller.createUser
+); 
 
-app.put('/user/:id',updateUser);
+app.put(
+  '/user/:id',
+  crudcontroller.updateUser
+);
  
-app.delete('/user/:id',deleteUser)
-  
+app.delete(
+  '/user/:id',
+  crudcontroller.deleteUser
+);
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
