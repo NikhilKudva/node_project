@@ -17,21 +17,25 @@ app.use(cookieparser());
 app.use(express.json());
 
 async function login(req: Request, res: Response) {
-    const { email, password } = req.body;
+    const { email, password} = req.body;
     try {
       const user = await User.findOne({ where: { email } });
       if (user && password === user.password) {
+        const role = user.role;
+        if(role === "admin"){
         const accesstoken = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
         const refreshToken = jwt.sign({ id: user.id, role: user.role }, REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
-
-      // Assigning refresh token in http-only cookie 
-      res.cookie('jwt', refreshToken, {
+        res.cookie('jwt', refreshToken, {
           httpOnly: true,
           sameSite: 'none', secure: true,
-          maxAge: 24 * 60 * 60 * 1000
-      });
-        res.json({ accessToken: accesstoken });
-      } else {
+          maxAge: 24 * 60 * 60 * 1000});
+
+          res.json({ accessToken: accesstoken });
+        }else{
+        res.status(401).json({ message: 'Unauthorized: Admin access required' });
+        
+        }
+      }else {
         res.status(401).json({ message: 'Invalid email or password' });
       }
     } catch (error) {
