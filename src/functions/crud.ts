@@ -3,7 +3,6 @@ import User from '../models/user';
 import dotenv from 'dotenv';
 import Redis from 'ioredis';
 import expressRedisCache from 'express-redis-cache';
-import { error } from 'console';
 
 dotenv.config();
 
