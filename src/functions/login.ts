@@ -2,8 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import User from '../models/user';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { access } from 'fs';
-const cookieparser = require('cookie-parser');
+import cookieparser from 'cookie-parser';
 
 dotenv.config();
 
